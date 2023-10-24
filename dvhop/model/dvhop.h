@@ -44,6 +44,7 @@ namespace ns3 {
       virtual void NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress address);
       virtual void NotifyRemoveAddress (uint32_t interface, Ipv4InterfaceAddress address);
       virtual void PrintRoutingTable (Ptr<OutputStreamWrapper> stream) const;
+      virtual void PrintRoutingTable (Ptr<OutputStreamWrapper> stream, Time::Unit unit) const;
 
       int64_t AssignStreams(int64_t stream);
 

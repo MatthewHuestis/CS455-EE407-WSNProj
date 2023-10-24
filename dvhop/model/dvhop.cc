@@ -358,6 +358,12 @@ namespace ns3 {
       m_disTable.Print (stream);
     }
 
+    void
+    RoutingProtocol::PrintRoutingTable (Ptr<OutputStreamWrapper> stream, Time::Unit unit) const
+    {
+      *stream->GetStream () << "(" << m_ipv4->GetObject<Node>()->GetId() << " - Not implemented yet";
+    }
+
 
 
 
