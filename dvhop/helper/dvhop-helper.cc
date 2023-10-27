@@ -9,6 +9,7 @@
 #include "ns3/node.h"
 #include "ns3/simulator.h"
 #include "ns3/dvhop.h"
+#include "ns3/wifi-mac-helper.h"
 
 namespace ns3 {
 
