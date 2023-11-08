@@ -39,6 +39,8 @@ private:
   //\{
   /// Number of nodes
   uint32_t size;
+  /// Number of nodes which will become anchor nodes, must be at least 1
+  uint32_t beacons;
   /// Distance between nodes, meters
   double step;
   /// Simulation time, seconds
@@ -78,6 +80,7 @@ int main (int argc, char **argv)
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
   size (10),
+  beacons (3),
   step (100),
   totalTime (10),
   pcap (true),
@@ -97,6 +100,7 @@ DVHopExample::Configure (int argc, char **argv)
   cmd.AddValue ("pcap", "Write PCAP traces.", pcap);
   cmd.AddValue ("printRoutes", "Print routing table dumps.", printRoutes);
   cmd.AddValue ("size", "Number of nodes.", size);
+  cmd.AddValue ("beacons", "Number of nodes that are beacons, must be at least 1", beacons);
   cmd.AddValue ("time", "Simulation time, s.", totalTime);
   cmd.AddValue ("step", "Grid step, m", step);
 
@@ -148,7 +152,7 @@ DVHopExample::CreateNodes ()
                                  "MinX", DoubleValue (0.0),
                                  "MinY", DoubleValue (0.0),
                                  "DeltaX", DoubleValue (step),
-                                 "DeltaY", DoubleValue (0),
+                                 "DeltaY", DoubleValue (step),
                                  "GridWidth", UintegerValue (size),
                                  "LayoutType", StringValue ("RowFirst"));
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
@@ -158,23 +162,25 @@ DVHopExample::CreateNodes ()
 void
 DVHopExample::CreateBeacons ()
 {
-  Ptr<Ipv4RoutingProtocol> proto = nodes.Get (0)->GetObject<Ipv4>()->GetRoutingProtocol ();
-  Ptr<dvhop::RoutingProtocol> dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-  dvhop->SetIsBeacon (true);
-  dvhop->SetPosition (123.42, 4534.452);
+  if (beacons <= 0) {
+    std::cout << "beacons was set to " << beacons << " corrected to 1 to avoid issue."
+    beacons = 1;
+  }
+  if (beacons >= size) {
+    std::cout << "beacons was set to " << beacons << " corrected to " << (size - 1) << " to avoid issue."
+    this.beacons = this.size - 1;
+  }
 
+uint32_t stepThrough = this.size / this.beacons;
 
-  proto = nodes.Get (4)->GetObject<Ipv4>()->GetRoutingProtocol ();
-  dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-  dvhop->SetIsBeacon (true);
-  dvhop->SetPosition (6663.42, 566.646);
-
-
-  proto = nodes.Get (9)->GetObject<Ipv4>()->GetRoutingProtocol ();
-  dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-  dvhop->SetIsBeacon (true);
-  dvhop->SetPosition (123.42, 9873.45);
-
+  Ptr<Ipv4RoutingProtocol> proto;
+  Ptr<dvhop::RoutingProtocol> dvhop;
+  for ( uint32_t i = 0; i < beacons; i++) {
+    proto = nodes.Get (i * stepThrough)->GetObject<Ipv4>()->GetRoutingProtocol ();
+    dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
+    dvhop->SetIsBeacon (true);
+  }
+  
 }
 
 
