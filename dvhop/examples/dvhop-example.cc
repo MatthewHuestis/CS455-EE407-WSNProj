@@ -130,6 +130,23 @@ DVHopExample::Report (std::ostream &)
 }
 
 void
+DVHopExample::DisableNode(int index)
+{
+  std::cout << "Disabling node " << index << "\n";
+
+  Ptr<ConstantPositionMobilityModel> mob = nodes.Get(index)->GetObject<ConstantPositionMobilityModel>();
+  mob->SetPosition(Vector(100000 * (index + 1), 100000 * (index + 1), 100000 * (index + 1)));
+}
+
+void DVHopExample::DamageWSN(int n_to_damage) {
+  std::cout << "Damaging " << n_to_damage << " nodes.\n";
+  for(int i = 0; i < n_to_damage; i++) {
+    int r_index = std::rand() % (size - 1);
+    this->DisableNode(r_index);
+  }
+}
+
+void
 DVHopExample::CreateNodes ()
 {
   std::cout << "Creating " << (unsigned)size << " nodes " << step << " m apart.\n";
