@@ -1,4 +1,4 @@
-all: clean copy configure run
+all: clean copy run
 
 clean:
 	@echo "Cleaning old source directory..."

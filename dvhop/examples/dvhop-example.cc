@@ -34,6 +34,12 @@ public:
   /// Report results
   void Report (std::ostream & os);
 
+  /// Simulate damage to the WSN
+  void DamageWSN(int n_to_damage);
+
+  /// Disable a node
+  void DisableNode(int index);
+
 private:
   ///\name parameters
   //\{
@@ -49,6 +55,8 @@ private:
   bool pcap;
   /// Print routes if true
   bool printRoutes;
+  /// Number of nodes to damage
+  uint32_t d_extent;
   //\}
 
   ///\name network
@@ -84,7 +92,8 @@ DVHopExample::DVHopExample () :
   step (100),
   totalTime (10),
   pcap (true),
-  printRoutes (true)
+  printRoutes (true),
+  d_extent(5)
 {
 }
 
@@ -103,6 +112,7 @@ DVHopExample::Configure (int argc, char **argv)
   cmd.AddValue ("beacons", "Number of nodes that are beacons, must be at least 1", beacons);
   cmd.AddValue ("time", "Simulation time, s.", totalTime);
   cmd.AddValue ("step", "Grid step, m", step);
+  cmd.AddValue ("damageExtent", "How much to damage the WSN", d_extent);
 
   cmd.Parse (argc, argv);
   return true;
@@ -115,14 +125,16 @@ DVHopExample::Run ()
   CreateNodes ();
   CreateDevices ();
   InstallInternetStack ();
-
   CreateBeacons();
+  DamageWSN(d_extent);
 
   std::cout << "Starting simulation for " << totalTime << " s ...\n";
 
   Simulator::Stop (Seconds (totalTime));
 
   AnimationInterface anim("animation.xml");
+
+
 
   Simulator::Run ();
   Simulator::Destroy ();
@@ -131,6 +143,23 @@ DVHopExample::Run ()
 void
 DVHopExample::Report (std::ostream &)
 {
+}
+
+void
+DVHopExample::DisableNode(int index)
+{
+  std::cout << "Disabling node " << index << "\n";
+
+  Ptr<ConstantPositionMobilityModel> mob = nodes.Get(index)->GetObject<ConstantPositionMobilityModel>();
+  mob->SetPosition(Vector(100000, 100000, 100000));
+}
+
+void DVHopExample::DamageWSN(int n_to_damage) {
+  std::cout << "Damaging " << n_to_damage << " nodes.\n";
+  for(int i = 0; i < n_to_damage; i++) {
+    int r_index = std::rand() % (size - 1);
+    this->DisableNode(r_index);
+  }
 }
 
 void
@@ -163,15 +192,15 @@ void
 DVHopExample::CreateBeacons ()
 {
   if (beacons <= 0) {
-    std::cout << "beacons was set to " << beacons << " corrected to 1 to avoid issue."
+    std::cout << "\"beacons\" was set to " << beacons << ", corrected to 1 to avoid issue.";
     beacons = 1;
   }
   if (beacons >= size) {
-    std::cout << "beacons was set to " << beacons << " corrected to " << (size - 1) << " to avoid issue."
-    this.beacons = this.size - 1;
+    std::cout << "\"beacons\" was set to " << beacons << ", corrected to " << (size - 1) << " to avoid issue.";
+    this->beacons = this->size - 1;
   }
 
-uint32_t stepThrough = this.size / this.beacons;
+uint32_t stepThrough = this->size / this->beacons;
 
   Ptr<Ipv4RoutingProtocol> proto;
   Ptr<dvhop::RoutingProtocol> dvhop;
