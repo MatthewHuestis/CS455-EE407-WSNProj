@@ -87,8 +87,8 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
-  size (100),
-  beacons (20),
+  size (20),
+  beacons (5),
   step (100),
   totalTime (10),
   pcap (true),
@@ -134,8 +134,6 @@ DVHopExample::Run ()
 
   AnimationInterface anim("animation.xml");
 
-
-
   Simulator::Run ();
   Simulator::Destroy ();
 }
@@ -158,7 +156,11 @@ void DVHopExample::DamageWSN(int n_to_damage) {
   std::cout << "Damaging " << n_to_damage << " nodes.\n";
   for(int i = 0; i < n_to_damage; i++) {
     int r_index = std::rand() % (size - 1);
-    this->DisableNode(r_index);
+    //this->DisableNode(r_index);
+    int total_time_ms = (int) totalTime * 1000;
+    int scheduled_time_ms = std::rand() % total_time_ms;
+    std::cout << "Scheduled damage at " << scheduled_time_ms << "\n";
+    Simulator::Schedule(MilliSeconds(scheduled_time_ms), &DVHopExample::DisableNode, this, r_index);
   }
 }
 
