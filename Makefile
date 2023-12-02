@@ -40,3 +40,7 @@ run:
 	@echo "Running 'dvhop-example'..."
 	cd ~/ns-allinone-3.30.1/ns-3.30.1 && \
 	./waf --run dvhop-example
+
+goodRun:
+	touch ./pcap_cache/junk.pcap
+	make clean clear_pcaps copy run pull_pcaps merge_pcaps
