@@ -5,6 +5,6 @@ GOALS
 - [x] Get DVhop working with NS3_30.
 - [x] Design and build a WSN topology with the DV-Hop code.
 - [x] Test, simulate and collect data from the WSN with the DV-Hop code.
-- [ ] Make nodes die gradually.
-- [ ] Simulate and collect data from a degraded WSN with the DV-Hop code.
+- [x] Make nodes die gradually.
+- [x] Simulate and collect data from a degraded WSN with the DV-Hop code.
 - [ ] Work on Documentation and Presentation
