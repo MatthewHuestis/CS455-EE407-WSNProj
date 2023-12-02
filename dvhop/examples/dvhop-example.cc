@@ -89,7 +89,7 @@ int main (int argc, char **argv)
 DVHopExample::DVHopExample () :
   size (20),
   beacons (5),
-  step (100),
+  step (10),
   totalTime (10),
   pcap (true),
   printRoutes (true),
@@ -210,6 +210,14 @@ uint32_t stepThrough = this->size / this->beacons;
     proto = nodes.Get (i * stepThrough)->GetObject<Ipv4>()->GetRoutingProtocol ();
     dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
     dvhop->SetIsBeacon (true);
+  }
+
+  for(uint32_t i = 0; i < size; i++) {
+    proto = nodes.Get (i)->GetObject<Ipv4>()->GetRoutingProtocol ();
+    dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
+    int r_x = std::rand() % 2000 - 1000;
+    int r_y = std::rand() % 2000 - 1000;
+    dvhop->SetPosition(r_x, r_y);
   }
   
 }

@@ -408,8 +408,6 @@ namespace ns3 {
      return false;
     }
 
-
-
     void
     RoutingProtocol::SendHello ()
     {
