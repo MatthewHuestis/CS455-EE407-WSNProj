@@ -460,8 +460,8 @@ namespace ns3 {
                                          m_seqNo++,                   //Sequence Numbr
                                          0,                           //Hop Count
                                          iface.GetLocal ());          //Beacon Address
-              std::cout <<__FILE__<< __LINE__ << helloHeader << std::endl;
-
+              //std::cout <<__FILE__<< __LINE__ << helloHeader << std::endl;
+              NS_LOG_DEBUG (__FILE__ << __LINE__ << helloHeader << std::endl);
               NS_LOG_DEBUG (iface.GetLocal ()<< " Sending Hello...");
               Ptr<Packet> packet = Create<Packet>();
               packet->AddHeader (helloHeader);
@@ -512,6 +512,7 @@ namespace ns3 {
       NS_LOG_DEBUG ("Update the entry for: " << fHeader.GetBeaconAddress ());
       UpdateHopsTo (fHeader.GetBeaconAddress (), fHeader.GetHopCount () + 1, fHeader.GetXPosition (), fHeader.GetYPosition ());
 
+      // TODO we need to implement trilateration here!
 
 
     }
