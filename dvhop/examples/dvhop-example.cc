@@ -97,8 +97,8 @@ DVHopExample::DVHopExample () :
 {
 }
 
-bool
-DVHopExample::Configure (int argc, char **argv)
+//configues settings and defaults of the ns3 simulation
+bool DVHopExample::Configure (int argc, char **argv)
 {
   // Enable DVHop logs by default. Comment this if too noisy
   LogComponentEnable("DVHopRoutingProtocol", LOG_LEVEL_ALL);
@@ -118,8 +118,8 @@ DVHopExample::Configure (int argc, char **argv)
   return true;
 }
 
-void
-DVHopExample::Run ()
+//runs ns3 simulation
+void DVHopExample::Run ()
 {
 //  Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", UintegerValue (1)); // enable rts cts all the time.
   CreateNodes ();
@@ -138,13 +138,12 @@ DVHopExample::Run ()
   Simulator::Destroy ();
 }
 
-void
-DVHopExample::Report (std::ostream &)
+void DVHopExample::Report (std::ostream &)
 {
 }
 
-void
-DVHopExample::DisableNode(int index)
+//Disables the node at specified index
+void DVHopExample::DisableNode(int index)
 {
   std::cout << "Disabling node " << index << "\n";
 
@@ -152,6 +151,7 @@ DVHopExample::DisableNode(int index)
   mob->SetPosition(Vector(100000 * (index + 1), 100000 * (index + 1), 100000 * (index + 1)));
 }
 
+//takes the number of nodes to damage then figures out a list of random nodes to disable and then calls DisableNode to disable them
 void DVHopExample::DamageWSN(int n_to_damage) {
   std::cout << "Damaging " << n_to_damage << " nodes.\n";
   for(int i = 0; i < n_to_damage; i++) {
@@ -164,8 +164,8 @@ void DVHopExample::DamageWSN(int n_to_damage) {
   }
 }
 
-void
-DVHopExample::CreateNodes ()
+//creates size nodes (size is set in line 90)
+void DVHopExample::CreateNodes ()
 {
   std::cout << "Creating " << (unsigned)size << " nodes " << step << " m apart.\n";
   nodes.Create (size);
@@ -190,8 +190,8 @@ DVHopExample::CreateNodes ()
   mobility.Install (nodes);
 }
 
-void
-DVHopExample::CreateBeacons ()
+//create becon nodes
+void DVHopExample::CreateBeacons ()
 {
   if (beacons <= 0) {
     std::cout << "\"beacons\" was set to " << beacons << ", corrected to 1 to avoid issue.";
@@ -223,8 +223,7 @@ uint32_t stepThrough = this->size / this->beacons;
 }
 
 
-void
-DVHopExample::CreateDevices ()
+void DVHopExample::CreateDevices ()
 {
   WifiMacHelper wifiMac = WifiMacHelper ();
   wifiMac.SetType ("ns3::AdhocWifiMac");
@@ -241,8 +240,7 @@ DVHopExample::CreateDevices ()
     }
 }
 
-void
-DVHopExample::InstallInternetStack ()
+void DVHopExample::InstallInternetStack ()
 {
   DVHopHelper dvhop;
   // you can configure DVhop attributes here using aodv.Set(name, value)

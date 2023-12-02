@@ -11,6 +11,7 @@ all:
 
 clean:
 	@echo "Cleaning old source directory..."
+	touch ~/ns-allinone-3.30.1/ns-3.30.1/src/dvhop/fakeData
 	rm -r ~/ns-allinone-3.30.1/ns-3.30.1/src/dvhop
 
 copy:
@@ -42,5 +43,5 @@ run:
 	./waf --run dvhop-example
 
 goodRun:
-	touch ./pcap_cache/junk.pcap
+	touch ./pcap_cache/fakeData.pcap
 	make clean clear_pcaps copy run pull_pcaps merge_pcaps
