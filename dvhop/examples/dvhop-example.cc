@@ -87,8 +87,8 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
-  size (20),
-  beacons (5),
+  size (100),
+  beacons (10),
   step (10),
   totalTime (10),
   pcap (true),
