@@ -71,6 +71,23 @@ namespace ns3
       else return Time::Max ();
     }
 
+    void DistanceTable::TrimExpiredEntries() {
+      std::vector<Ipv4Address> expired_addrs;
+      expired_addrs.clear();
+      for(auto const& x : m_table) {
+        Time b_time = x.second.GetTime();
+        Time now = Simulator::Now();
+        if(now.GetMilliSeconds() > b_time.GetMilliSeconds() + 1500) {
+          expired_addrs.push_back(x.first);
+        }
+      }
+      for(uint i = 0; i < expired_addrs.size(); i++) {
+        std::cout << "@STATS@EVENT@TIME@" << Simulator::Now().GetMilliSeconds() << "@EXPIRED_ENTRY@\n";
+        m_table.erase(expired_addrs.at(i));
+      }
+      
+    }
+
     std::vector<Ipv4Address>
     DistanceTable::GetKnownBeacons() const
     {

@@ -222,6 +222,7 @@ uint32_t stepThrough = this->size / this->beacons;
     double r_x = mob->GetPosition().x + x_offset;
     double r_y = mob->GetPosition().y + y_offset;
     dvhop->SetPosition(r_x, r_y);
+    dvhop->SetPresetXY(r_x, r_y);
   }
   
 }

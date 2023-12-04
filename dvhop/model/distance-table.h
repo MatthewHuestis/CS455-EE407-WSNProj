@@ -75,6 +75,11 @@ namespace ns3
       Time LastUpdatedAt(Ipv4Address beacon) const;
 
       /**
+       * Removes expired paths from the distance table 
+       */
+      void TrimExpiredEntries();
+
+      /**
        * @brief GetKnownBeacons
        * @return A vector containing the known beacons
        */
