@@ -93,7 +93,7 @@ DVHopExample::DVHopExample () :
   totalTime (10),
   pcap (true),
   printRoutes (true),
-  d_extent(0)
+  d_extent(5)
 {
 }
 
@@ -145,7 +145,8 @@ void DVHopExample::Report (std::ostream &)
 //Disables the node at specified index
 void DVHopExample::DisableNode(int index)
 {
-  std::cout << "Disabling node " << index << "\n";
+  std::cout << "@STATS@EVENT@TIME@" << Simulator::Now().GetMilliSeconds();
+  std::cout << "@DISABLED_NODE@\n";
 
   Ptr<ConstantPositionMobilityModel> mob = nodes.Get(index)->GetObject<ConstantPositionMobilityModel>();
   mob->SetPosition(Vector(100000 * (index + 1), 100000 * (index + 1), 100000 * (index + 1)));

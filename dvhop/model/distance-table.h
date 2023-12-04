@@ -80,6 +80,11 @@ namespace ns3
       void TrimExpiredEntries();
 
       /**
+       * Sets the last updated time of the given beacon to now
+       */
+      void Touch(Ipv4Address beacon);
+
+      /**
        * @brief GetKnownBeacons
        * @return A vector containing the known beacons
        */

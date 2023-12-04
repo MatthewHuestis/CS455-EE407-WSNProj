@@ -77,15 +77,19 @@ namespace ns3
       for(auto const& x : m_table) {
         Time b_time = x.second.GetTime();
         Time now = Simulator::Now();
-        if(now.GetMilliSeconds() > b_time.GetMilliSeconds() + 1500) {
+        if(now.GetMilliSeconds() > b_time.GetMilliSeconds() + 1000) {
           expired_addrs.push_back(x.first);
         }
       }
       for(uint i = 0; i < expired_addrs.size(); i++) {
-        std::cout << "@STATS@EVENT@TIME@" << Simulator::Now().GetMilliSeconds() << "@EXPIRED_ENTRY@\n";
+        std::cout << "@STATS@EVENT@TIME@" << Simulator::Now().GetMilliSeconds();
+        std::cout << "@EXPIRED_ENTRY@\n";
         m_table.erase(expired_addrs.at(i));
       }
-      
+    }
+
+    void DistanceTable::Touch(Ipv4Address beacon) {
+      m_table.at(beacon).SetTime(Simulator::Now());
     }
 
     std::vector<Ipv4Address>

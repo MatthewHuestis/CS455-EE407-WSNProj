@@ -86,7 +86,8 @@ namespace ns3 {
     Ptr<Ipv4Route>
     RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header, Ptr<NetDevice> oif, Socket::SocketErrno &sockerr)
     {
-      NS_LOG_DEBUG("Outgoing packet through interface: " << (oif ? oif->GetIfIndex () : 0));
+      // Reduce spammy logging
+      //NS_LOG_DEBUG("Outgoing packet through interface: " << (oif ? oif->GetIfIndex () : 0));
       if(!p)
         {
           sockerr = Socket::ERROR_INVAL;
@@ -574,7 +575,6 @@ namespace ns3 {
       }
 
       if(b_hops.size() < 3) { 
-        std::cout << "Not enough information to trilaterate yet.\n";
         uint64_t sim_time = Simulator::Now().GetMilliSeconds();
         std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
         std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size() << "@\n";
@@ -583,13 +583,13 @@ namespace ns3 {
 
       if(IsBeacon()) { return; }
 
-      std::cout << "Node " << receiver << " - Hop table: \n";
-      for(uint i = 0; i < b_hops.size(); i++) {
-        Position bpos = m_disTable.GetBeaconPosition(b_addrs.at(i));
-        std::cout << "  addr: " << b_addrs.at(i) << "\n";
-        std::cout << "    hops: " << b_hops.at(i) << "\n";
-        std::cout << "    pos: " << bpos.first << ", " << bpos.second << "\n";
-      }
+      //std::cout << "Node " << receiver << " - Hop table: \n";
+      //for(uint i = 0; i < b_hops.size(); i++) {
+      //  Position bpos = m_disTable.GetBeaconPosition(b_addrs.at(i));
+      //  std::cout << "  addr: " << b_addrs.at(i) << "\n";
+      //  std::cout << "    hops: " << b_hops.at(i) << "\n";
+      //  std::cout << "    pos: " << bpos.first << ", " << bpos.second << "\n";
+      //}
 
       // Find closest beacons
       std::vector<Ipv4Address> closest_beacons;
@@ -610,7 +610,7 @@ namespace ns3 {
         closest_indices.push_back(min_index);
       }
 
-      std::cout << "Trilaterating new postion...\n";
+      //std::cout << "Trilaterating new postion...\n";
 
       // 1st beacon
       Ipv4Address b1_addr = b_addrs.at(closest_indices.at(0));
@@ -652,22 +652,14 @@ namespace ns3 {
 
       // Hop table size
       std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
-      std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size() << "@\n";
-
+      std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size();
       // X position
-      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
-      std::cout << "@POSITION_X@" << m_xPosition << "@\n";
-
+      std::cout << "@POSITION_X@" << m_xPosition;
       // Y position
-      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
-      std::cout << "@POSITION_Y@" << m_yPosition << "@\n";
-      
+      std::cout << "@POSITION_Y@" << m_yPosition;
       // X error
-      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
-      std::cout << "@ERROR_X@" << x_error << "@\n";
-
+      std::cout << "@ERROR_X@" << x_error;
       // Y error
-      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
       std::cout << "@ERROR_Y@" << y_error << "@\n";
     }
 
@@ -697,8 +689,12 @@ namespace ns3 {
           return;
         }
 
-      if( oldHops > newHops || oldHops == 0) //Update only when a shortest path is found
+      if( oldHops > newHops || oldHops == 0) { // Update only when a shortest path is found
         m_disTable.AddBeacon (beacon, newHops, x, y);
+      } else {
+        // Keep unchanged entries current
+        m_disTable.Touch(beacon);
+      }
     }
 
 
