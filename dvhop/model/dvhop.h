@@ -78,6 +78,13 @@ namespace ns3 {
       DistanceTable  m_disTable;
       void UpdateHopsTo (Ipv4Address beacon, uint16_t hops, double x, double y);
 
+      inline double V_Norm(double x, double y);
+
+      std::pair<double, double> Trilaterate(double x_1, double y_1, 
+          double hops_1, double x_2, double y_2, double hops_2, double x_3, 
+          double y_3, double hops_3);
+      
+      bool HasIndex(std::vector<uint>& indices, uint search_index);
 
       //Boolean to identify if this node acts as a Beacon
       bool m_isBeacon;

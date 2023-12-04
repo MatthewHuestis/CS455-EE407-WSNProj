@@ -490,6 +490,48 @@ namespace ns3 {
       socket->SendTo (packet, 0, InetSocketAddress (destination, DVHOP_PORT));
     }
 
+    inline double RoutingProtocol::V_Norm(double x, double y) {
+      return pow(pow(x, 2) + pow(y, 2), 0.5);
+    }
+
+    std::pair<double, double> RoutingProtocol::Trilaterate(double x_1, 
+        double y_1, double hops_1, double x_2, double y_2, double hops_2,
+        double x_3, double y_3, double hops_3)
+    {
+      double p12_d = V_Norm(x_2 - x_1, y_2 - y_1);
+
+      double ex_x = (x_2 - x_1) / p12_d;
+      double ex_y = (y_2 - y_1) / p12_d;
+
+      double a_x = x_3 - x_1;
+      double a_y = y_3 - y_1;
+
+      double i = ex_x * a_x + ex_y * a_y;
+
+      double b_x = x_3 - x_1 - i * ex_x;
+      double b_y = y_3 - y_1 - i * ex_y;
+
+      double ey_x = b_x / V_Norm(b_x, b_y);
+      double ey_y = b_y / V_Norm(b_x, b_y);
+
+      double j = ey_x * a_x + ey_y * a_y;
+
+      double x = (pow(hops_1, 2) - pow(hops_2, 2) + pow(p12_d, 2)) / (p12_d * 2);
+      double y = (pow(hops_1, 2) - pow(hops_3, 2) + pow(i, 2) + pow(j, 2)) / (j * 2) - i * x / j;
+      
+      return std::pair<double, double>(
+        x_1 + x * ex_x + y * ey_x,
+        y_1 + x * ex_y + y * ey_y
+      );
+    }
+
+    bool RoutingProtocol::HasIndex(std::vector<uint>& indices, uint search_index) {
+      for(uint i = 0; i < indices.size(); i++) {
+        if(indices.at(i) == search_index) { return true; }
+      }
+      return false;
+    }
+
     /**
      *Callback to receive DVHop Packets
      */
@@ -513,8 +555,59 @@ namespace ns3 {
       UpdateHopsTo (fHeader.GetBeaconAddress (), fHeader.GetHopCount () + 1, fHeader.GetXPosition (), fHeader.GetYPosition ());
 
       // TODO we need to implement trilateration here!
+      // Get the current beacons that we know
+      std::vector<Ipv4Address> b_addrs = m_disTable.GetKnownBeacons();
+      // Build hop table
+      std::vector<uint> b_hops;
+      for(uint i = 0; i < b_addrs.size(); i++) {
+        b_hops.push_back(m_disTable.GetHopsTo(b_addrs.at(i)));
+      }
+      // Find closest beacons
+      std::vector<Ipv4Address> closest_beacons;
+      std::vector<uint> closest_indices;
+      uint min_hops = -1;
+      uint min_index = -1;
+      for(uint i = 0; i < 3; i++) {
+        for(uint k = 0; k < b_hops.size(); k++) {
+          if(b_hops.at(k) < min_hops && !HasIndex(closest_indices, k)) {
+            min_index = k;
+            min_hops = b_hops.at(k);
+          }
+        }
+        closest_beacons.push_back(b_addrs.at(min_index));
+        closest_indices.push_back(min_index);
+      }
+      if(closest_beacons.size() < 3) { 
+        std::cout << "Not enough information to trilaterate yet.\n";
+        return;
+      }
+      std::cout << "Trilaterating new postion...\n";
+      // 1st beacon
+      Ipv4Address b1_addr = closest_beacons.at(closest_indices.at(0));
+      uint b1_hops = b_hops.at(closest_indices.at(0));
+      double b1_posX = m_disTable.GetBeaconPosition(b1_addr).first;
+      double b1_posY = m_disTable.GetBeaconPosition(b1_addr).second;
 
+      // 2nd beacon
+      Ipv4Address b2_addr = closest_beacons.at(closest_indices.at(1));
+      uint b2_hops = b_hops.at(closest_indices.at(1));
+      double b2_posX = m_disTable.GetBeaconPosition(b2_addr).first;
+      double b2_posY = m_disTable.GetBeaconPosition(b2_addr).second;
 
+      // 3rd beacon
+      Ipv4Address b3_addr = closest_beacons.at(closest_indices.at(2));
+      uint b3_hops = b_hops.at(closest_indices.at(2));
+      double b3_posX = m_disTable.GetBeaconPosition(b3_addr).first;
+      double b3_posY = m_disTable.GetBeaconPosition(b3_addr).second;
+
+      // Trilaterate between closest beacons
+      std::pair<double, double> new_pos = Trilaterate(
+          b1_posX, b1_posY, b1_hops,
+          b2_posX, b2_posY, b2_hops,
+          b3_posX, b3_posY, b3_hops
+      );
+      m_xPosition = new_pos.first;
+      m_yPosition = new_pos.second;
     }
 
     Ptr<Socket>
