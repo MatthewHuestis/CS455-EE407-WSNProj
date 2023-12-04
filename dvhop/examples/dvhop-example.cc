@@ -47,7 +47,7 @@ private:
   uint32_t size;
   /// Number of nodes which will become anchor nodes, must be at least 1
   uint32_t beacons;
-  /// Distance between nodes, meters
+  /// Approx. distance between nodes, meters
   double step;
   /// Simulation time, seconds
   double totalTime;
@@ -87,13 +87,13 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
-  size (100),
-  beacons (10),
+  size (15),
+  beacons (5),
   step (10),
   totalTime (10),
   pcap (true),
   printRoutes (true),
-  d_extent(5)
+  d_extent(0)
 {
 }
 
@@ -180,11 +180,11 @@ void DVHopExample::CreateNodes ()
   // Create static grid
   MobilityHelper mobility;
   mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
-                                 "MinX", DoubleValue (0.0),
-                                 "MinY", DoubleValue (0.0),
+                                 "MinX", DoubleValue (step),
+                                 "MinY", DoubleValue (step),
                                  "DeltaX", DoubleValue (step),
                                  "DeltaY", DoubleValue (step),
-                                 "GridWidth", UintegerValue (size),
+                                 "GridWidth", UintegerValue ((uint) sqrt(size)),
                                  "LayoutType", StringValue ("RowFirst"));
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (nodes);
@@ -212,11 +212,15 @@ uint32_t stepThrough = this->size / this->beacons;
     dvhop->SetIsBeacon (true);
   }
 
+  Ptr<ConstantPositionMobilityModel> mob;
   for(uint32_t i = 0; i < size; i++) {
     proto = nodes.Get (i)->GetObject<Ipv4>()->GetRoutingProtocol ();
+    mob = nodes.Get(i)->GetObject<ConstantPositionMobilityModel>();
     dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-    int r_x = std::rand() % 2000 - 1000;
-    int r_y = std::rand() % 2000 - 1000;
+    double x_offset = ((double) (std::rand() % 1000)) / 500.0;
+    double y_offset = ((double) (std::rand() % 1000)) / 500.0;
+    double r_x = mob->GetPosition().x + x_offset;
+    double r_y = mob->GetPosition().y + y_offset;
     dvhop->SetPosition(r_x, r_y);
   }
   

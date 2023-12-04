@@ -171,7 +171,8 @@ namespace ns3 {
                   Ptr<Packet> packet = p->Copy ();
                   if(  ! ldcb.IsNull () )
                     {//Forward the packet to further processing to the LocalDeliveryCallback defined
-                      NS_LOG_DEBUG("Forwarding packet to Local Delivery Callback");
+                      // Reduce spammy log messages -J
+                      // NS_LOG_DEBUG("Forwarding packet to Local Delivery Callback");
                       ldcb(packet,header,iif);
                     }
                   else
@@ -179,6 +180,7 @@ namespace ns3 {
                       NS_LOG_ERROR("Unable to deliver packet: LocalDeliverCallback is null.");
                       errcb(packet,header,Socket::ERROR_NOROUTETOHOST);
                     }
+                  // TTL hardcoded to 1 at the moment - Only sync hop tables with neighbors
                   if (header.GetTtl () > 1)
                     {
                       NS_LOG_LOGIC ("Forward broadcast...");
@@ -186,7 +188,8 @@ namespace ns3 {
                     }
                   else
                     {
-                      NS_LOG_LOGIC ("TTL Exceeded, drop packet");
+                      // Reduce spammy log messages -J
+                      // NS_LOG_LOGIC ("TTL Exceeded, drop packet");
                     }
                   return true;
                 }
@@ -393,7 +396,8 @@ namespace ns3 {
     void
     RoutingProtocol::HelloTimerExpire ()
     {
-      NS_LOG_DEBUG ("HelloTimer expired");
+      // Reduce spammy log messages -J
+      // NS_LOG_DEBUG ("HelloTimer expired");
 
       SendHello ();
 
@@ -541,17 +545,19 @@ namespace ns3 {
       Address sourceAddress;
       Ptr<Packet> packet = socket->RecvFrom (sourceAddress); //Read a single packet from 'socket' and retrieve the 'sourceAddress'
 
-      InetSocketAddress inetSourceAddr = InetSocketAddress::ConvertFrom (sourceAddress);
-      Ipv4Address sender = inetSourceAddr.GetIpv4 ();
+      //InetSocketAddress inetSourceAddr = InetSocketAddress::ConvertFrom (sourceAddress);
+      //Ipv4Address sender = inetSourceAddr.GetIpv4 ();
       Ipv4Address receiver = m_socketAddresses[socket].GetLocal ();
 
-      NS_LOG_DEBUG ("sender:           " << sender);
-      NS_LOG_DEBUG ("receiver:         " << receiver);
+      // Reduce spammy log messages -J
+      // NS_LOG_DEBUG ("sender:           " << sender);
+      // NS_LOG_DEBUG ("receiver:         " << receiver);
 
 
       FloodingHeader fHeader;
       packet->RemoveHeader (fHeader);
-      NS_LOG_DEBUG ("Update the entry for: " << fHeader.GetBeaconAddress ());
+      // Reduce spammy log messages -J
+      // NS_LOG_DEBUG ("Update the entry for: " << fHeader.GetBeaconAddress ());
       UpdateHopsTo (fHeader.GetBeaconAddress (), fHeader.GetHopCount () + 1, fHeader.GetXPosition (), fHeader.GetYPosition ());
 
       // TODO we need to implement trilateration here!
@@ -562,14 +568,30 @@ namespace ns3 {
       for(uint i = 0; i < b_addrs.size(); i++) {
         b_hops.push_back(m_disTable.GetHopsTo(b_addrs.at(i)));
       }
+
+      if(b_hops.size() < 3) { 
+        std::cout << "Not enough information to trilaterate yet.\n";
+        return;
+      }
+
+      if(IsBeacon()) { return; }
+
+      std::cout << "Node " << receiver << " - Hop table: \n";
+      for(uint i = 0; i < b_hops.size(); i++) {
+        std::cout << "  addr: " << b_addrs.at(i) << "\n";
+        std::cout << "  hops: " << b_hops.at(i) << "\n";
+      }
+
       // Find closest beacons
       std::vector<Ipv4Address> closest_beacons;
+      closest_beacons.clear();
       std::vector<uint> closest_indices;
+      closest_indices.clear();
       uint min_hops = -1;
       uint min_index = -1;
       for(uint i = 0; i < 3; i++) {
         for(uint k = 0; k < b_hops.size(); k++) {
-          if(b_hops.at(k) < min_hops && !HasIndex(closest_indices, k)) {
+          if(b_hops.at(k) <= min_hops && !HasIndex(closest_indices, k)) {
             min_index = k;
             min_hops = b_hops.at(k);
           }
@@ -577,37 +599,50 @@ namespace ns3 {
         closest_beacons.push_back(b_addrs.at(min_index));
         closest_indices.push_back(min_index);
       }
-      if(closest_beacons.size() < 3) { 
-        std::cout << "Not enough information to trilaterate yet.\n";
-        return;
-      }
+
       std::cout << "Trilaterating new postion...\n";
+
       // 1st beacon
-      Ipv4Address b1_addr = closest_beacons.at(closest_indices.at(0));
+      Ipv4Address b1_addr = b_addrs.at(closest_indices.at(0));
       uint b1_hops = b_hops.at(closest_indices.at(0));
       double b1_posX = m_disTable.GetBeaconPosition(b1_addr).first;
       double b1_posY = m_disTable.GetBeaconPosition(b1_addr).second;
 
       // 2nd beacon
-      Ipv4Address b2_addr = closest_beacons.at(closest_indices.at(1));
+      Ipv4Address b2_addr = b_addrs.at(closest_indices.at(1));
       uint b2_hops = b_hops.at(closest_indices.at(1));
       double b2_posX = m_disTable.GetBeaconPosition(b2_addr).first;
       double b2_posY = m_disTable.GetBeaconPosition(b2_addr).second;
 
       // 3rd beacon
-      Ipv4Address b3_addr = closest_beacons.at(closest_indices.at(2));
+      Ipv4Address b3_addr = b_addrs.at(closest_indices.at(2));
       uint b3_hops = b_hops.at(closest_indices.at(2));
       double b3_posX = m_disTable.GetBeaconPosition(b3_addr).first;
       double b3_posY = m_disTable.GetBeaconPosition(b3_addr).second;
 
+      //std::cout << "Beacon 1 position: " << b1_posX << b1_posY << "\n";
+      //std::cout << "Beacon 2 position: " << b2_posX << b2_posY << "\n";
+      //std::cout << "Beacon 3 position: " << b3_posX << b3_posY << "\n";
+      
       // Trilaterate between closest beacons
       std::pair<double, double> new_pos = Trilaterate(
           b1_posX, b1_posY, b1_hops,
           b2_posX, b2_posY, b2_hops,
           b3_posX, b3_posY, b3_hops
       );
+
       m_xPosition = new_pos.first;
       m_yPosition = new_pos.second;
+
+      uint64_t sim_time = Simulator::Now().GetMilliSeconds();
+      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
+      std::cout << "@HOP_TABLE_SIZE" << b_addrs.size() << "@\n";
+
+      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
+      std::cout << "@POSITION_X@" << m_xPosition << "@\n";
+
+      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
+      std::cout << "@POSITION_Y@" << m_yPosition << "@\n";
     }
 
     Ptr<Socket>
