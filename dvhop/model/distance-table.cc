@@ -82,8 +82,8 @@ namespace ns3
         }
       }
       for(uint i = 0; i < expired_addrs.size(); i++) {
-        std::cout << "@STATS@EVENT@TIME@" << Simulator::Now().GetMilliSeconds();
-        std::cout << "@EXPIRED_ENTRY@\n";
+        std::cout << "@STATS@TIME@" << Simulator::Now().GetMilliSeconds();
+        std::cout << "@EVENT@EXPIRED_ENTRY@\n";
         m_table.erase(expired_addrs.at(i));
       }
     }

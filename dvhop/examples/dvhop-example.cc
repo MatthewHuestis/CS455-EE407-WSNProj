@@ -87,8 +87,8 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
-  size (15),
-  beacons (5),
+  size (100),
+  beacons (20),
   step (10),
   totalTime (10),
   pcap (true),
@@ -145,8 +145,8 @@ void DVHopExample::Report (std::ostream &)
 //Disables the node at specified index
 void DVHopExample::DisableNode(int index)
 {
-  std::cout << "@STATS@EVENT@TIME@" << Simulator::Now().GetMilliSeconds();
-  std::cout << "@DISABLED_NODE@\n";
+  std::cout << "@STATS@TIME@" << Simulator::Now().GetMilliSeconds();
+  std::cout << "@EVENT@DISABLED_NODE@\n";
 
   Ptr<ConstantPositionMobilityModel> mob = nodes.Get(index)->GetObject<ConstantPositionMobilityModel>();
   mob->SetPosition(Vector(100000 * (index + 1), 100000 * (index + 1), 100000 * (index + 1)));

@@ -462,8 +462,8 @@ namespace ns3 {
           NS_LOG_DEBUG ("Node "<< iface.GetLocal () << " isBeacon? " << m_isBeacon);
           if (m_isBeacon){
               //Create a HELLO Packet for each known Beacon to this node
-              FloodingHeader helloHeader(m_xPosition,                 //X Position
-                                         m_yPosition,                 //Y Position
+              FloodingHeader helloHeader(m_presetX,                 //X Position
+                                         m_presetY,                 //Y Position
                                          m_seqNo++,                   //Sequence Numbr
                                          0,                           //Hop Count
                                          iface.GetLocal ());          //Beacon Address
@@ -576,8 +576,16 @@ namespace ns3 {
 
       if(b_hops.size() < 3) { 
         uint64_t sim_time = Simulator::Now().GetMilliSeconds();
-        std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
-        std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size() << "@\n";
+        std::cout << "@STATS@TIME@" << sim_time << "@NODE@" << receiver;
+        std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size();
+        // X position
+        std::cout << "@POSITION_X@" << 0;
+        // Y position
+        std::cout << "@POSITION_Y@" << 0;
+        // X error
+        std::cout << "@ERROR_X@" << (uint) -1;
+        // Y error
+        std::cout << "@ERROR_Y@" << (uint) -1 << "@\n";
         return;
       }
 
@@ -651,7 +659,7 @@ namespace ns3 {
       uint64_t sim_time = Simulator::Now().GetMilliSeconds();
 
       // Hop table size
-      std::cout << "@STATS@NODE@" << receiver << "@TIME@" << sim_time;
+      std::cout << "@STATS@TIME@" << sim_time << "@NODE@" << receiver;
       std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size();
       // X position
       std::cout << "@POSITION_X@" << m_xPosition;
