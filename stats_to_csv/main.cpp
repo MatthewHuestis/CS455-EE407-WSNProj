@@ -62,9 +62,12 @@ int main() {
                 string hop_table_size = parts.at(6);
                 string position_x = parts.at(8);
                 string position_y = parts.at(10);
+                string error_x = parts.at(12);
+                string error_y = parts.at(14);
                 string eventcode = "NONE";
                 cout << time << "," << address << "," << hop_table_size << ",";
-                cout << position_x << "," << position_y << "," << eventcode << "\n";
+                cout << position_x << "," << position_y << ",";
+                cout << error_x << "," << error_y << ", " << eventcode << "\n";
             }
         }
     }

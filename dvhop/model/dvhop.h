@@ -51,6 +51,7 @@ namespace ns3 {
       //Getters and Setters for protocol parameters
       void SetIsBeacon(bool isBeacon)    { m_isBeacon = isBeacon; }
       void SetPosition(double x, double y) { m_xPosition = x; m_yPosition = y; }
+      void SetPresetXY(double x, double y) { m_presetX = x; m_presetY = y; }
 
       double GetXPosition()               { return m_xPosition;}
       double GetYPosition()               { return m_yPosition;}
@@ -95,6 +96,10 @@ namespace ns3 {
       //This node's position info
       double m_xPosition;
       double m_yPosition;
+
+      // Reference position (used for error checking)
+      double m_presetX;
+      double m_presetY;
 
       //IPv4 Protocol
       Ptr<Ipv4>   m_ipv4;

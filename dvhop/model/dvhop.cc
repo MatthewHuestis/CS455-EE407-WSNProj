@@ -587,9 +587,13 @@ namespace ns3 {
         std::cout << "@STATS@TIME@" << sim_time << "@NODE@" << receiver;
         std::cout << "@HOP_TABLE_SIZE@" << b_addrs.size();
         // X position
-        std::cout << "@POSITION_X@" << 0;
+        std::cout << "@POSITION_X@" << m_xPosition;
         // Y position
-        std::cout << "@POSITION_Y@" << 0 << "\n";
+        std::cout << "@POSITION_Y@" << m_yPosition << "@\n";
+        // X error
+        std::cout << "@ERROR_X@" << 0;
+        // Y error
+        std::cout << "@ERROR_Y@" << 0 << "@\n";
         return;
       }
 
@@ -662,6 +666,9 @@ namespace ns3 {
       m_xPosition = new_pos.first;
       m_yPosition = new_pos.second;
 
+      double x_error = fabs(m_xPosition - m_presetX);
+      double y_error = fabs(m_yPosition - m_presetY);
+
       std::cout << "Trilaterated X: " << new_pos.first << "\n";
       std::cout << "Trilaterated Y: " << new_pos.second << "\n";
 
@@ -674,7 +681,11 @@ namespace ns3 {
       // X position
       std::cout << "@POSITION_X@" << m_xPosition;
       // Y position
-      std::cout << "@POSITION_Y@" << m_yPosition << "\n";
+      std::cout << "@POSITION_Y@" << m_yPosition;
+      // X error
+      std::cout << "@ERROR_X@" << x_error;
+      // Y error
+      std::cout << "@ERROR_Y@" << y_error << "@\n";
     }
 
     Ptr<Socket>
