@@ -589,7 +589,7 @@ namespace ns3 {
         // X position
         std::cout << "@POSITION_X@" << m_xPosition;
         // Y position
-        std::cout << "@POSITION_Y@" << m_yPosition << "@\n";
+        std::cout << "@POSITION_Y@" << m_yPosition;
         // X error
         std::cout << "@ERROR_X@" << 0;
         // Y error

@@ -93,7 +93,7 @@ DVHopExample::DVHopExample () :
   totalTime (10),
   pcap (true),
   printRoutes (true),
-  d_extent(0)
+  d_extent(75)
 {
 }
 
