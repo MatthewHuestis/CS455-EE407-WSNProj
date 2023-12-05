@@ -7,4 +7,12 @@ GOALS
 - [x] Test, simulate and collect data from the WSN with the DV-Hop code.
 - [x] Make nodes die gradually.
 - [x] Simulate and collect data from a degraded WSN with the DV-Hop code.
-- [ ] Work on Documentation and Presentation
+- [x] Work on Documentation and Presentation
+
+# Downloading & Configuring our simulation program
+> OS requirements: Ubuntu 20.04 or equivalent 
+>
+> To run our simulation program, you must have NS3.30.1 installed in your
+> home directory. (`/home/[USER]/ns-allinone-3.30.1`)
+
+Clone this repository anywhere on your system.
