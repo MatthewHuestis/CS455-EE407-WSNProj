@@ -54,8 +54,6 @@ namespace ns3 {
       m_isBeacon(false),
       m_xPosition(-1.0),
       m_yPosition(-1.0),
-      m_presetX(-1.0),
-      m_presetY(-1.0),
       m_seqNo (0)
     {
     }
@@ -462,8 +460,8 @@ namespace ns3 {
           NS_LOG_DEBUG ("Node "<< iface.GetLocal () << " isBeacon? " << m_isBeacon);
           if (m_isBeacon){
               //Create a HELLO Packet for each known Beacon to this node
-              FloodingHeader helloHeader(m_presetX,                 //X Position
-                                         m_presetY,                 //Y Position
+              FloodingHeader helloHeader(m_xPosition,                 //X Position
+                                         m_yPosition,                 //Y Position
                                          m_seqNo++,                   //Sequence Numbr
                                          0,                           //Hop Count
                                          iface.GetLocal ());          //Beacon Address
@@ -497,7 +495,7 @@ namespace ns3 {
       socket->SendTo (packet, 0, InetSocketAddress (destination, DVHOP_PORT));
     }
 
-    inline double RoutingProtocol::V_Norm(double x, double y) {
+    double RoutingProtocol::V_Norm(double x, double y) {
       return pow(pow(x, 2) + pow(y, 2), 0.5);
     }
 
@@ -523,8 +521,8 @@ namespace ns3 {
 
       double j = ey_x * a_x + ey_y * a_y;
 
-      double x = (pow(hops_1, 2) - pow(hops_2, 2) + pow(p12_d, 2)) / (p12_d * 2);
-      double y = (pow(hops_1, 2) - pow(hops_3, 2) + pow(i, 2) + pow(j, 2)) / (j * 2) - i * x / j;
+      double x = (pow(hops_1, 2.0) - pow(hops_2, 2.0) + pow(p12_d, 2.0)) / (p12_d * 2.0);
+      double y = (pow(hops_1, 2.0) - pow(hops_3, 2.0) + pow(i, 2.0) + pow(j, 2.0)) / (j * 2.0) - i * x / j;
       
       return std::pair<double, double>(
         x_1 + x * ex_x + y * ey_x,
@@ -537,6 +535,14 @@ namespace ns3 {
         if(indices.at(i) == search_index) { return true; }
       }
       return false;
+    }
+
+    double RoutingProtocol::AvgHopSize(double b1_x, double b1_y, double b2_x,
+                      double b2_y, double b3_x, double b3_y, double avg_nhops) {
+      double d12 = pow(pow(b1_x - b2_x, 2.0) + pow(b1_y - b2_y, 2.0), 0.5);
+      double d23 = pow(pow(b2_x - b3_x, 2.0) + pow(b2_y - b3_y, 2.0), 0.5);
+      double d31 = pow(pow(b3_x - b1_x, 2.0) + pow(b3_y - b1_y, 2.0), 0.5);
+      return (d12 + d23 + d31) / (3.0 * avg_nhops);
     }
 
     /**
@@ -562,14 +568,16 @@ namespace ns3 {
       // Reduce spammy log messages -J
       // NS_LOG_DEBUG ("Update the entry for: " << fHeader.GetBeaconAddress ());
       UpdateHopsTo (fHeader.GetBeaconAddress (), fHeader.GetHopCount () + 1, fHeader.GetXPosition (), fHeader.GetYPosition ());
+      m_disTable.TrimExpiredEntries();
+
+      // Beacons need not trilaterate
+      if(IsBeacon()) { return; }
 
       // TODO we need to implement trilateration here!
       // Get the current beacons that we know
-      m_disTable.TrimExpiredEntries();
       std::vector<Ipv4Address> b_addrs = m_disTable.GetKnownBeacons();
       // Build hop table
-      std::vector<uint> b_hops;
-      b_hops.clear();
+      std::vector<uint> b_hops({});
       for(uint i = 0; i < b_addrs.size(); i++) {
         b_hops.push_back(m_disTable.GetHopsTo(b_addrs.at(i)));
       }
@@ -581,15 +589,11 @@ namespace ns3 {
         // X position
         std::cout << "@POSITION_X@" << 0;
         // Y position
-        std::cout << "@POSITION_Y@" << 0;
-        // X error
-        std::cout << "@ERROR_X@" << (uint) -1;
-        // Y error
-        std::cout << "@ERROR_Y@" << (uint) -1 << "@\n";
+        std::cout << "@POSITION_Y@" << 0 << "\n";
         return;
       }
 
-      if(IsBeacon()) { return; }
+      
 
       //std::cout << "Node " << receiver << " - Hop table: \n";
       //for(uint i = 0; i < b_hops.size(); i++) {
@@ -600,10 +604,8 @@ namespace ns3 {
       //}
 
       // Find closest beacons
-      std::vector<Ipv4Address> closest_beacons;
-      closest_beacons.clear();
-      std::vector<uint> closest_indices;
-      closest_indices.clear();
+      std::vector<Ipv4Address> closest_beacons({});
+      std::vector<uint> closest_indices({});
       for(uint i = 0; i < 3; i++) {
         uint min_index = -1;
         uint min_hops = -1;
@@ -638,24 +640,32 @@ namespace ns3 {
       double b3_posX = m_disTable.GetBeaconPosition(b3_addr).first;
       double b3_posY = m_disTable.GetBeaconPosition(b3_addr).second;
 
-      //std::cout << "Beacon 1 position: " << b1_posX << "," << b1_posY << "\n";
-      //std::cout << "Beacon 2 position: " << b2_posX << "," << b2_posY << "\n";
-      //std::cout << "Beacon 3 position: " << b3_posX << "," << b3_posY << "\n";
+
+      double avg_nhops = ((double) b1_hops + (double) b2_hops + (double) b3_hops) / 3.0;
+      double avg_hopsize = AvgHopSize(b1_posX, b1_posY, b2_posX, b2_posY, b3_posX, b3_posY, avg_nhops);
+
+      std::cout << "Beacon 1 position: " << b1_posX << "," << b1_posY << "\n";
+      std::cout << "Beacon 1 hops: " << b1_hops << "\n";
+      std::cout << "Beacon 2 position: " << b2_posX << "," << b2_posY << "\n";
+      std::cout << "Beacon 2 hops: " << b2_hops << "\n";
+      std::cout << "Beacon 3 position: " << b3_posX << "," << b3_posY << "\n";
+      std::cout << "Beacon 3 hops: " << b3_hops << "\n";
+      std::cout << "Average hop size: " << avg_hopsize << "\n";
       
       // Trilaterate between closest beacons
       std::pair<double, double> new_pos = Trilaterate(
-          b1_posX, b1_posY, b1_hops,
-          b2_posX, b2_posY, b2_hops,
-          b3_posX, b3_posY, b3_hops
+          b1_posX, b1_posY, ((double) b1_hops) * avg_hopsize,
+          b2_posX, b2_posY, ((double) b2_hops) * avg_hopsize,
+          b3_posX, b3_posY, ((double) b3_hops) * avg_hopsize
       );
 
       m_xPosition = new_pos.first;
       m_yPosition = new_pos.second;
 
-      // Statistics
+      std::cout << "Trilaterated X: " << new_pos.first << "\n";
+      std::cout << "Trilaterated Y: " << new_pos.second << "\n";
 
-      double x_error = fabs(m_presetX - m_xPosition);
-      double y_error = fabs(m_presetY - m_yPosition);
+      // Statistics
       uint64_t sim_time = Simulator::Now().GetMilliSeconds();
 
       // Hop table size
@@ -664,11 +674,7 @@ namespace ns3 {
       // X position
       std::cout << "@POSITION_X@" << m_xPosition;
       // Y position
-      std::cout << "@POSITION_Y@" << m_yPosition;
-      // X error
-      std::cout << "@ERROR_X@" << x_error;
-      // Y error
-      std::cout << "@ERROR_Y@" << y_error << "@\n";
+      std::cout << "@POSITION_Y@" << m_yPosition << "\n";
     }
 
     Ptr<Socket>

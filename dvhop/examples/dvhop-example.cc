@@ -87,13 +87,13 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
-  size (100),
-  beacons (20),
-  step (10),
+  size (50),
+  beacons (12),
+  step (50),
   totalTime (10),
   pcap (true),
   printRoutes (true),
-  d_extent(5)
+  d_extent(0)
 {
 }
 
@@ -207,25 +207,23 @@ uint32_t stepThrough = this->size / this->beacons;
 
   Ptr<Ipv4RoutingProtocol> proto;
   Ptr<dvhop::RoutingProtocol> dvhop;
-  for ( uint32_t i = 0; i < beacons; i++) {
-    proto = nodes.Get (i * stepThrough)->GetObject<Ipv4>()->GetRoutingProtocol ();
-    dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-    dvhop->SetIsBeacon (true);
-  }
-
   Ptr<ConstantPositionMobilityModel> mob;
   for(uint32_t i = 0; i < size; i++) {
     proto = nodes.Get (i)->GetObject<Ipv4>()->GetRoutingProtocol ();
     mob = nodes.Get(i)->GetObject<ConstantPositionMobilityModel>();
     dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-    double x_offset = ((double) (std::rand() % 1000)) / 500.0;
-    double y_offset = ((double) (std::rand() % 1000)) / 500.0;
+    double x_offset = ((double) (std::rand() % 1000)) / 100.0;
+    double y_offset = ((double) (std::rand() % 1000)) / 100.0;
     double r_x = mob->GetPosition().x + x_offset;
     double r_y = mob->GetPosition().y + y_offset;
     dvhop->SetPosition(r_x, r_y);
-    dvhop->SetPresetXY(r_x, r_y);
   }
-  
+
+  for ( uint32_t i = 0; i < beacons; i++) {
+    proto = nodes.Get (i * stepThrough)->GetObject<Ipv4>()->GetRoutingProtocol ();
+    dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
+    dvhop->SetIsBeacon (true);
+  }
 }
 
 

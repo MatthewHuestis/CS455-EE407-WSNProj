@@ -51,12 +51,9 @@ namespace ns3 {
       //Getters and Setters for protocol parameters
       void SetIsBeacon(bool isBeacon)    { m_isBeacon = isBeacon; }
       void SetPosition(double x, double y) { m_xPosition = x; m_yPosition = y; }
-      void SetPresetXY(double x, double y) { m_presetX = x; m_presetY = y; }
 
       double GetXPosition()               { return m_xPosition;}
       double GetYPosition()               { return m_yPosition;}
-      double GetPresetX() { return m_presetX; }
-      double GetPresetY() { return m_presetY; }
       bool  IsBeacon()                   { return m_isBeacon;}
 
       void  PrintDistances(Ptr<OutputStreamWrapper> stream, Ptr<Node> node) const;
@@ -81,13 +78,16 @@ namespace ns3 {
       DistanceTable  m_disTable;
       void UpdateHopsTo (Ipv4Address beacon, uint16_t hops, double x, double y);
 
-      inline double V_Norm(double x, double y);
+      double V_Norm(double x, double y);
 
       std::pair<double, double> Trilaterate(double x_1, double y_1, 
           double hops_1, double x_2, double y_2, double hops_2, double x_3, 
           double y_3, double hops_3);
       
       bool HasIndex(std::vector<uint>& indices, uint search_index);
+
+      double AvgHopSize(double b1_x, double b1_y, double b2_x,
+                      double b2_y, double b3_x, double b3_y, double avg_nhops);
 
       //Boolean to identify if this node acts as a Beacon
       bool m_isBeacon;
@@ -96,10 +96,6 @@ namespace ns3 {
       double m_xPosition;
       double m_yPosition;
 
-      // Preset position (used for calculating error)
-      double m_presetX;
-      double m_presetY;
-
       //IPv4 Protocol
       Ptr<Ipv4>   m_ipv4;
       // Raw socket per each IP interface, map socket -> iface address (IP + mask)
@@ -107,11 +103,8 @@ namespace ns3 {
 
       uint32_t    m_seqNo;
 
-
-
       //Used to simulate jitter
       Ptr<UniformRandomVariable> m_URandom;
-
 
     };
   }
