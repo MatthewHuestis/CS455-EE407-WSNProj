@@ -15,13 +15,7 @@
 using namespace ns3;
 
 /**
- * \brief Test script.
- *
- * This script creates 1-dimensional grid topology and then ping last node from the first one:
- *
- * [10.0.0.1] <-- step --> [10.0.0.2] <-- step --> [10.0.0.3] <-- step --> [10.0.0.4]
- *
- *
+ * This script is modified from the included example in the DV
  */
 class DVHopExample
 {
@@ -87,17 +81,17 @@ int main (int argc, char **argv)
 
 //-----------------------------------------------------------------------------
 DVHopExample::DVHopExample () :
-  size (100),
-  beacons (25),
-  step (50),
-  totalTime (10),
-  pcap (true),
-  printRoutes (true),
-  d_extent(75)
+  size (100), // Default size: 100 nodes
+  beacons (12), // Default beacons: 12
+  step (50), // Default grid step: 50 meters
+  totalTime (10), // Default simulation time: 10 seconds
+  pcap (true), // Generate PCAPs by default
+  printRoutes (true), // Print routes by default
+  d_extent(25) // Damage 25 nodes over the course of the simulation by default
 {
 }
 
-//configues settings and defaults of the ns3 simulation
+// Configues settings and defaults of the ns3 simulation
 bool DVHopExample::Configure (int argc, char **argv)
 {
   // Enable DVHop logs by default. Comment this if too noisy
@@ -118,13 +112,13 @@ bool DVHopExample::Configure (int argc, char **argv)
   return true;
 }
 
-//runs ns3 simulation
+// Runs ns3 simulation
 void DVHopExample::Run ()
 {
 //  Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", UintegerValue (1)); // enable rts cts all the time.
-  CreateNodes ();
-  CreateDevices ();
-  InstallInternetStack ();
+  CreateNodes();
+  CreateDevices();
+  InstallInternetStack();
   CreateBeacons();
   DamageWSN(d_extent);
 
@@ -152,7 +146,8 @@ void DVHopExample::DisableNode(int index)
   mob->SetPosition(Vector(100000 * (index + 1), 100000 * (index + 1), 100000 * (index + 1)));
 }
 
-//takes the number of nodes to damage then figures out a list of random nodes to disable and then calls DisableNode to disable them
+// Takes the number of nodes to damage then figures out a list of random nodes to disable.
+// Calls DisableNode to disable each of them (will allow repeats to simulate realistic damage)
 void DVHopExample::DamageWSN(int n_to_damage) {
   std::cout << "Damaging " << n_to_damage << " nodes.\n";
   for(int i = 0; i < n_to_damage; i++) {
@@ -165,12 +160,11 @@ void DVHopExample::DamageWSN(int n_to_damage) {
   }
 }
 
-//creates size nodes (size is set in line 90)
+// Creates nodes
 void DVHopExample::CreateNodes ()
 {
   std::cout << "Creating " << (unsigned)size << " nodes " << step << " m apart.\n";
   nodes.Create (size);
-  // Name nodes
   for (uint32_t i = 0; i < size; ++i)
     {
       std::ostringstream os;
@@ -178,7 +172,7 @@ void DVHopExample::CreateNodes ()
       std::cout << "Creating node: "<< os.str ()<< std::endl ;
       Names::Add (os.str (), nodes.Get (i));
     }
-  // Create static grid
+  // Create grid and position nodes
   MobilityHelper mobility;
   mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
                                  "MinX", DoubleValue (step),
@@ -191,7 +185,7 @@ void DVHopExample::CreateNodes ()
   mobility.Install (nodes);
 }
 
-//create becon nodes
+// Create beacon nodes and assign positions to all nodes
 void DVHopExample::CreateBeacons ()
 {
   if (beacons <= 0) {
@@ -227,7 +221,7 @@ uint32_t stepThrough = this->size / this->beacons;
   }
 }
 
-
+// Install WiFi devices on nodes
 void DVHopExample::CreateDevices ()
 {
   WifiMacHelper wifiMac = WifiMacHelper ();
@@ -244,7 +238,8 @@ void DVHopExample::CreateDevices ()
       wifiPhy.EnablePcapAll (std::string ("aodv"));
     }
 }
-
+ 
+// Install IP stack on nodes
 void DVHopExample::InstallInternetStack ()
 {
   DVHopHelper dvhop;

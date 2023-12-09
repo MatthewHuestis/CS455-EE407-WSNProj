@@ -11,8 +11,6 @@ namespace ns3
 {
   namespace dvhop
   {
-
-
     typedef std::pair<double, double> Position;
 
     class BeaconInfo
@@ -33,9 +31,6 @@ namespace ns3
     };
 
     std::ostream & operator<< (std::ostream & os, BeaconInfo const &);
-
-
-
 
     /**
      * @brief The DistanceTable class stores local
@@ -107,11 +102,6 @@ namespace ns3
     private:
       std::map<Ipv4Address, BeaconInfo>  m_table;
     };
-
-
-
-
-
   }
 }
 
