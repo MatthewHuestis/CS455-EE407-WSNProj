@@ -5,10 +5,10 @@ all:
 	@echo "run - Compiles and run the simulation"
 	@echo "configure - Configure DV-hop example - only needs to be ran once"
 	@echo "pull_pcaps - Pull PCAP files from NS3 AIO dir into cache"
-	@echo "clear_pcaps - Delete PCAP files NS3 AIO dir and local cache"
+	@echo "clean_pcaps - Delete PCAP files NS3 AIO dir and local cache"
 	@echo "merge_pcaps - Merge PCAP files in cache into one"
 	@echo "sim" - Compile and run simulation
-	@echo "fullsim" - Clear caches, compile and run simulation, capture & process output
+	@echo "fullsim" - Clean caches, compile and run simulation, capture & process output
 
 clean:
 	@echo "Cleaning old source directory..."
@@ -30,7 +30,7 @@ pull_pcaps:
 	mkdir -p pcap_cache
 	cp ~/ns-allinone-3.30.1/ns-3.30.1/*.pcap ./pcap_cache
 
-clear_pcaps:
+clean_pcaps:
 	@echo "Clearing PCAP files from NS3 directory..."
 	touch ~/ns-allinone-3.30.1/ns-3.30.1/fakeData.pcap
 	rm ~/ns-allinone-3.30.1/ns-3.30.1/*.pcap
@@ -47,6 +47,8 @@ run:
 	cd ~/ns-allinone-3.30.1/ns-3.30.1 && \
 	./waf --run dvhop-example
 
+sim: clean copy run
+
 fullsim:
 	@echo "Cleaning old source directory..."
 	mkdir -p ~/ns-allinone-3.30.1/ns-3.30.1/src/dvhop
@@ -57,12 +59,12 @@ fullsim:
 	touch ~/ns-allinone-3.30.1/ns-3.30.1/fakeData.pcap
 	rm ~/ns-allinone-3.30.1/ns-3.30.1/*.pcap
 
-	@echo "Clearing PCAP files from cached directory"
+	@echo "Cleaning PCAP files from cached directory"
 	mkdir -p ./pcap_cache
 	touch ./pcap_cache/fakeData.pcap
 	rm ./pcap_cache/*.pcap
 
-	@echo "Clearing output cache..."
+	@echo "Cleaning output cache..."
 	touch ~/ns-allinone-3.30.1/ns-3.30.1/dvhop_output.txt
 	touch ./dvhop_output.txt
 	touch ./dvhop_output.csv
@@ -92,5 +94,3 @@ fullsim:
 	cat ./dvhop_output.txt | ./stats_to_csv/stats_to_csv >> dvhop_output.csv
 
 	@echo "Done."
-
-sim: clean copy run
